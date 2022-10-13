@@ -28,7 +28,8 @@
     },
     "Description": "Assigns the managed policy AWSGlueServiceRole to AWS Glue Crawler so it can crawl S3 buckets",
     "ManagedPolicyArns": [
-     "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+     "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole",
+     "arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess"
     ],
     "RoleName": "AWSGlueServiceRole-AccessS3Bucket"
    },
@@ -81,6 +82,41 @@
     "aws:cdk:path": "CdkWorkshopStack/iam-policy-forAssets/Resource"
    }
   },
+  "etlgluesource0D579DC0": {
+   "Type": "AWS::DynamoDB::Table",
+   "Properties": {
+    "KeySchema": [
+     {
+      "AttributeName": "Order_Id",
+      "KeyType": "HASH"
+     },
+     {
+      "AttributeName": "Item_Id",
+      "KeyType": "RANGE"
+     }
+    ],
+    "AttributeDefinitions": [
+     {
+      "AttributeName": "Order_Id",
+      "AttributeType": "S"
+     },
+     {
+      "AttributeName": "Item_Id",
+      "AttributeType": "S"
+     }
+    ],
+    "ProvisionedThroughput": {
+     "ReadCapacityUnits": 5,
+     "WriteCapacityUnits": 5
+    },
+    "TableName": "glue-etl-demo-source"
+   },
+   "UpdateReplacePolicy": "Delete",
+   "DeletionPolicy": "Delete",
+   "Metadata": {
+    "aws:cdk:path": "CdkWorkshopStack/etl-glue-source/Resource"
+   }
+  },
   "gluecrawlers3": {
    "Type": "AWS::Glue::Crawler",
    "Properties": {
@@ -88,18 +124,10 @@
      "Ref": "gluecrawlerroleB13EEB29"
     },
     "Targets": {
-     "S3Targets": [
+     "DynamoDBTargets": [
       {
        "Path": {
-        "Fn::Join": [
-         "",
-         [
-          {
-           "Ref": "glueetlbucketE63378BB"
-          },
-          "/data"
-         ]
-        ]
+        "Ref": "etlgluesource0D579DC0"
        }
       }
      ]
@@ -119,7 +147,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02OTQ6CMBBGz+K+jCLEvXABgwcgtYxkoLZJp5WYhrtbqAtX732T+TtDXcLpIBcu1DAXmh4Q716qWaRSH7mC2AQ1oxft0/wso5GMq+Cql8zoGa4bBMkXxM5q3Pp33qwm9dlitlWMOiCk3Dq5aHSr2EfT1ZHMKDpkG5zKC/68tWYgT9aswtgBYeLju7xAWaf3JyYqXDCeXghd5hdr95z02gAAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02PQQ+CMAyFf4v3UkWMd+UPGPRu5lZJZWwJHRpC9t8dzIOn973m5bXd46HE3UZ9pNCmKyw/cL4GpTtIo/ssFc7nUXcUoH66H2U5K6EIUt2VCAXB0yLAqse58ZaW/KoXb1lPi80UwUxO9d6kTTf1yMkVIrR2JEy2HtTH0hBhLU33tOxaaEj8OOhc/ce1d4YDexfBeUP4ku27PGJ5SI+9hLkYRhe4J2yyfgF45TaZ9AAAAA=="
    },
    "Metadata": {
     "aws:cdk:path": "CdkWorkshopStack/CDKMetadata/Default"

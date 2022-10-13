@@ -19,6 +19,7 @@ import { TableEncryption } from 'aws-cdk-lib/aws-dynamodb';
 
 //set AWS managed policy arn and glue service URL
 const glue_managed_policy ="arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole";
+const dynamodb_managed_policy ="arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess";
 const glue_ServiceUrl = "glue.amazonaws.com";
 
 
@@ -53,9 +54,16 @@ export class CdkWorkshopStack extends Stack {
           "glue-service-policy",
           glue_managed_policy
         ),
+        ManagedPolicy.fromManagedPolicyArn(
+          this,
+          "dynamodb-service-policy",
+          dynamodb_managed_policy
+        )
+        
       ],
       assumedBy: new ServicePrincipal(glue_ServiceUrl),
     });
+ 
     this.glueRole = glue_crawler_role;
 
     //add policy to role to grant access to S3 asset bucket and public buckets

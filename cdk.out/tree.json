@@ -74,6 +74,14 @@
               "version": "2.41.0"
             }
           },
+          "dynamodb-service-policy": {
+            "id": "dynamodb-service-policy",
+            "path": "CdkWorkshopStack/dynamodb-service-policy",
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.Resource",
+              "version": "2.41.0"
+            }
+          },
           "glue-crawler-role": {
             "id": "glue-crawler-role",
             "path": "CdkWorkshopStack/glue-crawler-role",
@@ -98,7 +106,8 @@
                     },
                     "description": "Assigns the managed policy AWSGlueServiceRole to AWS Glue Crawler so it can crawl S3 buckets",
                     "managedPolicyArns": [
-                      "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole"
+                      "arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole",
+                      "arn:aws:iam::aws:policy/AmazonDynamoDBReadOnlyAccess"
                     ],
                     "roleName": "AWSGlueServiceRole-AccessS3Bucket"
                   }
@@ -174,6 +183,62 @@
               "version": "2.41.0"
             }
           },
+          "etl-glue-source": {
+            "id": "etl-glue-source",
+            "path": "CdkWorkshopStack/etl-glue-source",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "CdkWorkshopStack/etl-glue-source/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::DynamoDB::Table",
+                  "aws:cdk:cloudformation:props": {
+                    "keySchema": [
+                      {
+                        "attributeName": "Order_Id",
+                        "keyType": "HASH"
+                      },
+                      {
+                        "attributeName": "Item_Id",
+                        "keyType": "RANGE"
+                      }
+                    ],
+                    "attributeDefinitions": [
+                      {
+                        "attributeName": "Order_Id",
+                        "attributeType": "S"
+                      },
+                      {
+                        "attributeName": "Item_Id",
+                        "attributeType": "S"
+                      }
+                    ],
+                    "provisionedThroughput": {
+                      "readCapacityUnits": 5,
+                      "writeCapacityUnits": 5
+                    },
+                    "tableName": "glue-etl-demo-source"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_dynamodb.CfnTable",
+                  "version": "2.41.0"
+                }
+              },
+              "ScalingRole": {
+                "id": "ScalingRole",
+                "path": "CdkWorkshopStack/etl-glue-source/ScalingRole",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.Resource",
+                  "version": "2.41.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_dynamodb.Table",
+              "version": "2.41.0"
+            }
+          },
           "glue-crawler-s3": {
             "id": "glue-crawler-s3",
             "path": "CdkWorkshopStack/glue-crawler-s3",
@@ -184,18 +249,10 @@
                   "Ref": "gluecrawlerroleB13EEB29"
                 },
                 "targets": {
-                  "s3Targets": [
+                  "dynamoDbTargets": [
                     {
                       "path": {
-                        "Fn::Join": [
-                          "",
-                          [
-                            {
-                              "Ref": "glueetlbucketE63378BB"
-                            },
-                            "/data"
-                          ]
-                        ]
+                        "Ref": "etlgluesource0D579DC0"
                       }
                     }
                   ]
