@@ -56,7 +56,7 @@
          [
           "arn:aws:s3:::",
           {
-           "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+           "Ref": "glueetlbucketE63378BB"
           },
           "/*"
          ]
@@ -87,21 +87,21 @@
    "Properties": {
     "KeySchema": [
      {
-      "AttributeName": "Order_Id",
+      "AttributeName": "orderId",
       "KeyType": "HASH"
      },
      {
-      "AttributeName": "Item_Id",
+      "AttributeName": "itemId",
       "KeyType": "RANGE"
      }
     ],
     "AttributeDefinitions": [
      {
-      "AttributeName": "Order_Id",
+      "AttributeName": "orderId",
       "AttributeType": "S"
      },
      {
-      "AttributeName": "Item_Id",
+      "AttributeName": "itemId",
       "AttributeType": "S"
      }
     ],
@@ -117,7 +117,7 @@
     "aws:cdk:path": "CdkWorkshopStack/etl-glue-source/Resource"
    }
   },
-  "gluecrawlers3": {
+  "gluecrawlerdynamoDB": {
    "Type": "AWS::Glue::Crawler",
    "Properties": {
     "Role": {
@@ -133,7 +133,7 @@
      ]
     },
     "DatabaseName": "glue-etl-demo",
-    "Name": "s3-csv-crawler",
+    "Name": "glue-dynamo-crawler",
     "SchemaChangePolicy": {
      "DeleteBehavior": "DEPRECATE_IN_DATABASE",
      "UpdateBehavior": "UPDATE_IN_DATABASE"
@@ -141,13 +141,67 @@
     "TablePrefix": "demo-"
    },
    "Metadata": {
-    "aws:cdk:path": "CdkWorkshopStack/glue-crawler-s3"
+    "aws:cdk:path": "CdkWorkshopStack/glue-crawler-dynamoDB"
+   }
+  },
+  "glueetldemojob": {
+   "Type": "AWS::Glue::Job",
+   "Properties": {
+    "Command": {
+     "Name": "glue-etl",
+     "PythonVersion": "3",
+     "ScriptLocation": {
+      "Fn::Join": [
+       "",
+       [
+        "s3://",
+        {
+         "Ref": "glueetlbucketE63378BB"
+        },
+        "/script/glue-cdk-asset-etl.py"
+       ]
+      ]
+     }
+    },
+    "Role": {
+     "Fn::GetAtt": [
+      "gluecrawlerroleB13EEB29",
+      "Arn"
+     ]
+    },
+    "DefaultArguments": {
+     "--JOB_NAME": "aws-etl-glue-demo-job",
+     "--DATABASE_NAME": "glue-etl-demo",
+     "--TABLE_NAME": "demo-glue_etl_demo_source",
+     "--BUCKET_PATH": {
+      "Fn::Join": [
+       "",
+       [
+        "s3://",
+        {
+         "Ref": "glueetlbucketE63378BB"
+        },
+        "/write"
+       ]
+      ]
+     }
+    },
+    "Description": "Sample Glue Processing Job from DynamoDB to S3",
+    "GlueVersion": "3.0",
+    "MaxRetries": 0,
+    "Name": "aws-etl-glue-demo-job",
+    "NumberOfWorkers": 2,
+    "Timeout": 5,
+    "WorkerType": "G.1X"
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkWorkshopStack/glue-etl-demo-job"
    }
   },
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02PQQ+CMAyFf4v3UkWMd+UPGPRu5lZJZWwJHRpC9t8dzIOn973m5bXd46HE3UZ9pNCmKyw/cL4GpTtIo/ssFc7nUXcUoH66H2U5K6EIUt2VCAXB0yLAqse58ZaW/KoXb1lPi80UwUxO9d6kTTf1yMkVIrR2JEy2HtTH0hBhLU33tOxaaEj8OOhc/ce1d4YDexfBeUP4ku27PGJ5SI+9hLkYRhe4J2yyfgF45TaZ9AAAAA=="
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02PQW+DMAyFf0vvxh1rtfvKraeK9Y5C4iGXkEg4tEJR/vsC6WGn79l+8rM/8Vzjx0G9pNJmrCz3GH+C0iPkVhflhPGy6JECNL/urQouSiiBnDolQkHwewOwmjC23tLm33nzlvW6lUUlMKtTkzc56a764txFgsEuhDHXzaxeluZtdPV9SrBvz4cN7AZoSfwy65LxTzfeGQ7sXQLnDeFDjs/6C+tz/vAhzNW8uMATYVv4ByYmZl39AAAA"
    },
    "Metadata": {
     "aws:cdk:path": "CdkWorkshopStack/CDKMetadata/Default"

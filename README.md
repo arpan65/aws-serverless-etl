@@ -1,7 +1,7 @@
-# Welcome to your CDK TypeScript project
+# Serverless ETL using AWS Glue
 
 You should explore the contents of this project. It demonstrates a CDK app with an instance of a stack (`CdkWorkshopStack`)
-which contains an Amazon SQS queue that is subscribed to an Amazon SNS topic.
+which contains the starter code of a ETL data pipeline between dynamoDB and S3
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 

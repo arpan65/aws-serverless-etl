@@ -15,7 +15,7 @@ import {
 } from "aws-cdk-lib/aws-iam";
 import * as path from "path";
 import dynamodb=require('aws-cdk-lib/aws-dynamodb');
-import { TableEncryption } from 'aws-cdk-lib/aws-dynamodb';
+
 
 //set AWS managed policy arn and glue service URL
 const glue_managed_policy ="arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole";
@@ -41,10 +41,10 @@ export class CdkWorkshopStack extends Stack {
     });
   
    
-   
+  
    
     //create glue cralwer role to access S3 bucket
-    const glue_crawler_role = new Role(this, "glue-crawler-role", {
+    const glue_service_role = new Role(this, "glue-crawler-role", {
       roleName: "AWSGlueServiceRole-AccessS3Bucket",
       description:
         "Assigns the managed policy AWSGlueServiceRole to AWS Glue Crawler so it can crawl S3 buckets",
@@ -64,13 +64,13 @@ export class CdkWorkshopStack extends Stack {
       assumedBy: new ServicePrincipal(glue_ServiceUrl),
     });
  
-    this.glueRole = glue_crawler_role;
+    this.glueRole = glue_service_role;
 
     //add policy to role to grant access to S3 asset bucket and public buckets
     const iam_policy_forAssets = new Policy(this, "iam-policy-forAssets", {
       force: true,
       policyName: "glue-policy-workflowAssetAccess",
-      roles: [glue_crawler_role],
+      roles: [glue_service_role],
       statements: [
         new PolicyStatement({
           effect: Effect.ALLOW,
@@ -80,7 +80,7 @@ export class CdkWorkshopStack extends Stack {
             "s3:DeleteObject",
             "s3:ListBucket",
           ],
-          resources: ["arn:aws:s3:::" + f_pyAssetETL.s3BucketName + "/*"],
+          resources: ["arn:aws:s3:::" + etl_bucket.bucketName+ "/*"],
         }),
         new PolicyStatement({
           effect: Effect.ALLOW,
@@ -89,18 +89,19 @@ export class CdkWorkshopStack extends Stack {
         }),
       ],
     });
+    
     // creating the source table 
     const sourcetable=new dynamodb.Table(this,'etl-glue-source',{
-      partitionKey :{name:"Order_Id",type:dynamodb.AttributeType.STRING},
-      sortKey:{name:"Item_Id",type:dynamodb.AttributeType.STRING},
+      partitionKey :{name:"orderId",type:dynamodb.AttributeType.STRING},
+      sortKey:{name:"itemId",type:dynamodb.AttributeType.STRING},
       tableName:"glue-etl-demo-source",
       removalPolicy:RemovalPolicy.DESTROY
     })
 
     //create glue crawler to crawl csv files in S3
-    const glue_crawler_s3 = new glue.CfnCrawler(this, "glue-crawler-s3", {
-      name: "s3-csv-crawler",
-      role: glue_crawler_role.roleName,
+    const glue_crawler = new glue.CfnCrawler(this, "glue-crawler-dynamoDB", {
+      name: "glue-dynamo-crawler",
+      role: glue_service_role.roleName,
       targets: {
         dynamoDbTargets:[
           {
@@ -108,16 +109,38 @@ export class CdkWorkshopStack extends Stack {
           }
         ]
       },
-      databaseName: 'glue-etl-demo',
+      databaseName: StackConfiguration.glueCatlogDBName,
       tablePrefix:'demo-',
       schemaChangePolicy: {
         updateBehavior: "UPDATE_IN_DATABASE",
         deleteBehavior: "DEPRECATE_IN_DATABASE",
       },
     });
-  
-   
-  
-  
+
+    // define the arguments
+    const job_params={
+      '--JOB_NAME':StackConfiguration.glueJobName,
+      '--DATABASE_NAME':StackConfiguration.glueCatlogDBName,
+      '--TABLE_NAME':StackConfiguration.glueTableName,
+      '--BUCKET_PATH':`s3://${etl_bucket.bucketName}/write`
+    }
+
+    //create glue job
+    const etl_glue_job=new glue.CfnJob(this,'glue-etl-demo-job',{
+      role:glue_service_role.roleArn,
+      command:{
+        name:'glue-etl',
+        scriptLocation:`s3://${etl_bucket.bucketName}/script/glue-cdk-asset-etl.py`,
+        pythonVersion:'3',
+      },
+      defaultArguments:job_params,
+      description:'Sample Glue Processing Job from DynamoDB to S3',
+      name:StackConfiguration.glueJobName,
+      glueVersion:'3.0',
+      workerType:'G.1X',
+      numberOfWorkers:2,
+      timeout:5,
+      maxRetries:0
+    })
   }
 }
