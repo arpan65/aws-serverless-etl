@@ -5,6 +5,9 @@ import * as glue from 'aws-cdk-lib/aws-glue';
 import { StackConfiguration } from './configs/stack-configuration';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Asset } from "aws-cdk-lib/aws-s3-assets";
+import * as lambda from 'aws-cdk-lib/aws-lambda';
+
+
 import {
   Role,
   ManagedPolicy,
@@ -31,16 +34,17 @@ export class CdkWorkshopStack extends Stack {
    // Create a bucket
     const etl_bucket=new Bucket(this,'glue-etl-bucket',{
      bucketName:StackConfiguration.bucketName,
-     removalPolicy:RemovalPolicy.DESTROY
+     removalPolicy:RemovalPolicy.DESTROY,
+     enforceSSL:true
      
     });
   
-     //python scripts run in Glue Workflow
+     //python scripts to run in Glue job
     const f_pyAssetETL = new Asset(this, "py-asset-etl", {
       path: path.join(__dirname, "assets/glue-cdk-asset-etl.py"),
     });
   
-   
+  
   
    
     //create glue cralwer role to access S3 bucket
@@ -92,8 +96,8 @@ export class CdkWorkshopStack extends Stack {
     
     // creating the source table 
     const sourcetable=new dynamodb.Table(this,'etl-glue-source',{
-      partitionKey :{name:"orderId",type:dynamodb.AttributeType.STRING},
-      sortKey:{name:"itemId",type:dynamodb.AttributeType.STRING},
+      partitionKey :{name:"policy_id",type:dynamodb.AttributeType.STRING},
+      sortKey:{name:"age_of_car",type:dynamodb.AttributeType.STRING},
       tableName:"glue-etl-demo-source",
       removalPolicy:RemovalPolicy.DESTROY
     })
@@ -130,8 +134,8 @@ export class CdkWorkshopStack extends Stack {
       role:glue_service_role.roleArn,
       command:{
         name:'glue-etl',
-        scriptLocation:`s3://${etl_bucket.bucketName}/script/glue-cdk-asset-etl.py`,
-        pythonVersion:'3',
+        scriptLocation:f_pyAssetETL.s3ObjectUrl,
+        pythonVersion:'3.9',
       },
       defaultArguments:job_params,
       description:'Sample Glue Processing Job from DynamoDB to S3',
@@ -144,3 +148,4 @@ export class CdkWorkshopStack extends Stack {
     })
   }
 }
+

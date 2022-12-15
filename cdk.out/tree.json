@@ -33,6 +33,71 @@
                   "fqn": "aws-cdk-lib.aws_s3.CfnBucket",
                   "version": "2.41.0"
                 }
+              },
+              "Policy": {
+                "id": "Policy",
+                "path": "CdkWorkshopStack/glue-etl-bucket/Policy",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "CdkWorkshopStack/glue-etl-bucket/Policy/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::S3::BucketPolicy",
+                      "aws:cdk:cloudformation:props": {
+                        "bucket": {
+                          "Ref": "glueetlbucketE63378BB"
+                        },
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": "s3:*",
+                              "Condition": {
+                                "Bool": {
+                                  "aws:SecureTransport": "false"
+                                }
+                              },
+                              "Effect": "Deny",
+                              "Principal": {
+                                "AWS": "*"
+                              },
+                              "Resource": [
+                                {
+                                  "Fn::GetAtt": [
+                                    "glueetlbucketE63378BB",
+                                    "Arn"
+                                  ]
+                                },
+                                {
+                                  "Fn::Join": [
+                                    "",
+                                    [
+                                      {
+                                        "Fn::GetAtt": [
+                                          "glueetlbucketE63378BB",
+                                          "Arn"
+                                        ]
+                                      },
+                                      "/*"
+                                    ]
+                                  ]
+                                }
+                              ]
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.CfnBucketPolicy",
+                      "version": "2.41.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3.BucketPolicy",
+                  "version": "2.41.0"
+                }
               }
             },
             "constructInfo": {
@@ -195,21 +260,21 @@
                   "aws:cdk:cloudformation:props": {
                     "keySchema": [
                       {
-                        "attributeName": "orderId",
+                        "attributeName": "policy_id",
                         "keyType": "HASH"
                       },
                       {
-                        "attributeName": "itemId",
+                        "attributeName": "age_of_car",
                         "keyType": "RANGE"
                       }
                     ],
                     "attributeDefinitions": [
                       {
-                        "attributeName": "orderId",
+                        "attributeName": "policy_id",
                         "attributeType": "S"
                       },
                       {
-                        "attributeName": "itemId",
+                        "attributeName": "age_of_car",
                         "attributeType": "S"
                       }
                     ],
@@ -280,18 +345,9 @@
                 "command": {
                   "name": "glue-etl",
                   "scriptLocation": {
-                    "Fn::Join": [
-                      "",
-                      [
-                        "s3://",
-                        {
-                          "Ref": "glueetlbucketE63378BB"
-                        },
-                        "/script/glue-cdk-asset-etl.py"
-                      ]
-                    ]
+                    "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/73bff6dfba58d0d973637b4f8f761fe7d5aaaeaaf5d847b60e391e25855c3281.py"
                   },
-                  "pythonVersion": "3"
+                  "pythonVersion": "3.9"
                 },
                 "role": {
                   "Fn::GetAtt": [

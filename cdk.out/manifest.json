@@ -23,7 +23,7 @@
         "validateOnSynth": false,
         "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
         "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
-        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/dab0b766a268ddb9ce6cfc8a5f329f71091de6059a1c038524c20b031735e6cb.json",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/e7e9ba303f94871c01beeed6d9d5e139ea3ed504ca793ac73fa24620b76acf25.json",
         "requiresBootstrapStackVersion": 6,
         "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
         "additionalDependencies": [
@@ -43,6 +43,12 @@
           {
             "type": "aws:cdk:logicalId",
             "data": "glueetlbucketE63378BB"
+          }
+        ],
+        "/CdkWorkshopStack/glue-etl-bucket/Policy/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "glueetlbucketPolicy321F58CD"
           }
         ],
         "/CdkWorkshopStack/glue-crawler-role/Resource": [

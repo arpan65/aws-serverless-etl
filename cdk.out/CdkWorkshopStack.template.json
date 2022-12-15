@@ -11,6 +11,56 @@
     "aws:cdk:path": "CdkWorkshopStack/glue-etl-bucket/Resource"
    }
   },
+  "glueetlbucketPolicy321F58CD": {
+   "Type": "AWS::S3::BucketPolicy",
+   "Properties": {
+    "Bucket": {
+     "Ref": "glueetlbucketE63378BB"
+    },
+    "PolicyDocument": {
+     "Statement": [
+      {
+       "Action": "s3:*",
+       "Condition": {
+        "Bool": {
+         "aws:SecureTransport": "false"
+        }
+       },
+       "Effect": "Deny",
+       "Principal": {
+        "AWS": "*"
+       },
+       "Resource": [
+        {
+         "Fn::GetAtt": [
+          "glueetlbucketE63378BB",
+          "Arn"
+         ]
+        },
+        {
+         "Fn::Join": [
+          "",
+          [
+           {
+            "Fn::GetAtt": [
+             "glueetlbucketE63378BB",
+             "Arn"
+            ]
+           },
+           "/*"
+          ]
+         ]
+        }
+       ]
+      }
+     ],
+     "Version": "2012-10-17"
+    }
+   },
+   "Metadata": {
+    "aws:cdk:path": "CdkWorkshopStack/glue-etl-bucket/Policy/Resource"
+   }
+  },
   "gluecrawlerroleB13EEB29": {
    "Type": "AWS::IAM::Role",
    "Properties": {
@@ -87,21 +137,21 @@
    "Properties": {
     "KeySchema": [
      {
-      "AttributeName": "orderId",
+      "AttributeName": "policy_id",
       "KeyType": "HASH"
      },
      {
-      "AttributeName": "itemId",
+      "AttributeName": "age_of_car",
       "KeyType": "RANGE"
      }
     ],
     "AttributeDefinitions": [
      {
-      "AttributeName": "orderId",
+      "AttributeName": "policy_id",
       "AttributeType": "S"
      },
      {
-      "AttributeName": "itemId",
+      "AttributeName": "age_of_car",
       "AttributeType": "S"
      }
     ],
@@ -149,18 +199,9 @@
    "Properties": {
     "Command": {
      "Name": "glue-etl",
-     "PythonVersion": "3",
+     "PythonVersion": "3.9",
      "ScriptLocation": {
-      "Fn::Join": [
-       "",
-       [
-        "s3://",
-        {
-         "Ref": "glueetlbucketE63378BB"
-        },
-        "/script/glue-cdk-asset-etl.py"
-       ]
-      ]
+      "Fn::Sub": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/73bff6dfba58d0d973637b4f8f761fe7d5aaaeaaf5d847b60e391e25855c3281.py"
      }
     },
     "Role": {
@@ -201,7 +242,7 @@
   "CDKMetadata": {
    "Type": "AWS::CDK::Metadata",
    "Properties": {
-    "Analytics": "v2:deflate64:H4sIAAAAAAAA/02PQW+DMAyFf0vvxh1rtfvKraeK9Y5C4iGXkEg4tEJR/vsC6WGn79l+8rM/8Vzjx0G9pNJmrCz3GH+C0iPkVhflhPGy6JECNL/urQouSiiBnDolQkHwewOwmjC23tLm33nzlvW6lUUlMKtTkzc56a764txFgsEuhDHXzaxeluZtdPV9SrBvz4cN7AZoSfwy65LxTzfeGQ7sXQLnDeFDjs/6C+tz/vAhzNW8uMATYVv4ByYmZl39AAAA"
+    "Analytics": "v2:deflate64:H4sIAAAAAAAA/01PTW/CMAz9Lbu7hq6I++htp6njjtLEVKZpItXpEIry30kbJHZ6H7af7U881Lj/UHeptBkryz3G36D0CNm6RGkwnhY9UoD26l6swI+3rB9v+6WLOCmhBNJclAgFwa8VgNWEsfOW1qkN3yGFJTAPpyZv8hln1ZfOjSQY7EIYs25ndbc0r6Vv36cEW3q+emA3QEfil1mXHf94653hwN4lcN4Q3mT3Vx+xPuT3b8JczYsLPBF2BZ95SeayGgEAAA=="
    },
    "Metadata": {
     "aws:cdk:path": "CdkWorkshopStack/CDKMetadata/Default"
