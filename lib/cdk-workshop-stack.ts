@@ -102,7 +102,7 @@ export class CdkWorkshopStack extends Stack {
       removalPolicy:RemovalPolicy.DESTROY
     })
 
-    //create glue crawler to crawl csv files in S3
+    //create glue crawler
     const glue_crawler = new glue.CfnCrawler(this, "glue-crawler-dynamoDB", {
       name: "glue-dynamo-crawler",
       role: glue_service_role.roleName,
