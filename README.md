@@ -17,7 +17,7 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
 
 ## How to reproduce
-Prerequisited - you should have an AWS account (free tier is enough) and AWS CLI shloud have configured (https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)
+Prerequisited - you should have an AWS account (free tier is enough) and AWS CLI should have already configured (https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-configure.html)
 
 1. Clone the repository
 2. Bootstap your AWS environment using - CDK Bootstrap
